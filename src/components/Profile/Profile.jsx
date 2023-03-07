@@ -18,36 +18,47 @@ import {
   useDisclosure,
   VStack,
 } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { RiDeleteBin7Fill } from 'react-icons/ri';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import {
+  removeFromPlaylist,
+  updateprofilePicture,
+} from '../../redux/actions/profile';
+import { loadUser } from '../../redux/actions/user';
 import { fileUploadCss } from '../Auth/Register';
 
-const Profile = () => {
-  const user = {
-    name: 'NikhilSingh',
-    email: 'singh.nikhil.2016880@gmail.com',
-    createdAt: String(new Date().toISOString()),
-    role: 'user',
-    subscription: {
-      status: 'active',
-    },
-    playlist: [
-      {
-        course: 'safsdf',
-        poster:
-          'https://images.pexels.com/photos/4491461/pexels-photo-4491461.jpeg?auto=compress&cs=tinysrgb&w=600',
-      },
-    ],
+const Profile = ({ user }) => {
+  const dispatch = useDispatch();
+  const { loading, message, error } = useSelector(state => state.profile);
+
+  const removeFromPlaylistHandler = async id => {
+    await dispatch(removeFromPlaylist(id));
+    dispatch(loadUser());
   };
 
-  const removeFromPlaylistHandler = id => {
-    console.log(id);
-  };
-
-  const changeImageSubmitHandler = (e, image) => {
+  const changeImageSubmitHandler = async (e, image) => {
     e.preventDefault();
+    const myForm = new FormData();
+    myForm.append('file', image);
+
+    await dispatch(updateprofilePicture(myForm));
+
+    dispatch(loadUser());
   };
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      dispatch({ type: 'clearError' });
+    }
+    if (message) {
+      toast.success(message);
+      dispatch({ type: 'clearMessage' });
+    }
+  }, [dispatch, error, message]);
 
   const { isOpen, onClose, onOpen } = useDisclosure();
 
@@ -63,7 +74,7 @@ const Profile = () => {
         padding="8"
       >
         <VStack>
-          <Avatar boxSize={'48'} />
+          <Avatar src={user.avatar.url} boxSize={'48'} />
           <Button colorScheme={'yellow'} variant={'ghost'} onClick={onOpen}>
             Change Photo
           </Button>
@@ -85,7 +96,7 @@ const Profile = () => {
           {user.role !== 'admin' && (
             <HStack>
               <Text children="Subsrcription" fontWeight={'bold'} />
-              {user.subscription.status === 'active' ? (
+              {user.subscription && user.subscription.status === 'active' ? (
                 <Button color={'yellow.500'} variant="unstyled">
                   Cancel Subscription
                 </Button>
@@ -131,7 +142,8 @@ const Profile = () => {
                 </Link>
 
                 <Button
-                  oncClick={() => removeFromPlaylistHandler(element.course)}
+                  isLoading={loading}
+                  onClick={() => removeFromPlaylistHandler(element.course)}
                 >
                   <RiDeleteBin7Fill />
                 </Button>
@@ -146,6 +158,7 @@ const Profile = () => {
         isOpen={isOpen}
         onClose={onClose}
         onOpen={onOpen}
+        loading={loading}
       />
     </Container>
   );
@@ -153,7 +166,12 @@ const Profile = () => {
 
 export default Profile;
 
-function ChangePhotoBox({ isOpen, onClose, changeImageSubmitHandler }) {
+function ChangePhotoBox({
+  isOpen,
+  onClose,
+  changeImageSubmitHandler,
+  loading,
+}) {
   const [image, setImage] = useState('');
   const [imagePrev, setImagePrev] = useState('');
 
@@ -189,7 +207,12 @@ function ChangePhotoBox({ isOpen, onClose, changeImageSubmitHandler }) {
                   css={{ '&::file-selector-button': fileUploadCss }}
                   onChange={changeImage}
                 />
-                <Button w={'full'} colorScheme="yellow" type="submit">
+                <Button
+                  isLoading={loading}
+                  w={'full'}
+                  colorScheme="yellow"
+                  type="submit"
+                >
                   Change
                 </Button>
               </VStack>
