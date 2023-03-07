@@ -26,7 +26,8 @@ const CourseModal = ({
   courseTitle,
   deleteButtonHandler,
   addLectureHandler,
-  lectures = [1, 2, 3, 4, 5, 6, 7, 8],
+  lectures = [],
+  loading,
 }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -73,12 +74,13 @@ const CourseModal = ({
               {lectures.map((item, index) => (
                 <VideoCard
                   key={index}
-                  title={'react intro'}
-                  desciption={'this is a intro lecture for you all'}
+                  title={item.title}
+                  desciption={item.desciption}
                   num={index + 1}
-                  lectureId="asdlecturefasdf"
+                  lectureId={item._id}
                   courseId={id}
                   deleteButtonHandler={deleteButtonHandler}
+                  loading={loading}
                 />
               ))}
             </Box>
@@ -129,7 +131,12 @@ const CourseModal = ({
                     ></video>
                   )}
 
-                  <Button w="full" colorScheme={'purple'} type={'submit'}>
+                  <Button
+                    isLoading={loading}
+                    w="full"
+                    colorScheme={'purple'}
+                    type={'submit'}
+                  >
                     Add lecture
                   </Button>
                 </VStack>
@@ -154,7 +161,7 @@ function VideoCard({
   lectureId,
   courseId,
   deleteButtonHandler,
-  lectures = [],
+  loading,
 }) {
   return (
     <Stack
@@ -169,11 +176,12 @@ function VideoCard({
         <Heading size={'sm'} children={`#${num} ${title}`} />
         <Text children={desciption} />
       </Box>
-      <Button>
-        <RiDeleteBin7Fill
-          color={'purple.600'}
-          onClick={() => deleteButtonHandler(courseId, lectureId)}
-        />
+      <Button
+        isLoading={loading}
+        color={'purple.600'}
+        onClick={() => deleteButtonHandler(courseId, lectureId)}
+      >
+        <RiDeleteBin7Fill />
       </Button>
     </Stack>
   );
