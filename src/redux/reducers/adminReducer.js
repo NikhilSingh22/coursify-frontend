@@ -3,6 +3,24 @@ import { createReducer } from '@reduxjs/toolkit';
 export const adminReducer = createReducer(
   {},
   {
+    getAdminStatsRequest: state => {
+      state.loading = true;
+    },
+    // we haven't added the functinality of subscription here
+    getAdminStatsSuccess: (state, action) => {
+      state.loading = false;
+      state.stats = action.payload.stats;
+      state.usersCount = action.payload.usersCount;
+      state.viewsCount = action.payload.viewsCount;
+      state.viewsPercentage = action.payload.viewsPercentage;
+      state.usersPercentage = action.payload.usersPercentage;
+      state.usersProfit = action.payload.usersProfit;
+      state.viewsProfit = action.payload.viewsProfit;
+    },
+    getAdminStatsFail: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
     getAllUsersRequest: state => {
       state.loading = true;
     },
